@@ -94,12 +94,14 @@ silent_deathless() {
 
 		function break_die_boomerang() { exit 1; }
 
-		# This prevents all logging from working
-		function __elog_base() { return 0; }
+		if [[ ${TESTER_DEBUG:-0} != 1 ]]; then
 
-		# eerror calls echo directly instead of __vecho
-		function eerror() { return 0; }
+			# This prevents all logging from working
+			function __elog_base() { return 0; }
 
+			# eerror calls echo directly instead of __vecho
+			function eerror() { return 0; }
+		fi
 		PORTAGE_QUIET=1 "$@"
 	)
 }
