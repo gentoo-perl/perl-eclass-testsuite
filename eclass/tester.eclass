@@ -53,6 +53,26 @@ warn_ok() {
 		do_warn "${message}"
 	fi
 }
+is_not_ok() {
+	local ok message
+	ok=$1
+	message=$2
+	if [[ 0 == ${ok} ]]; then
+		do_fail "${message}";
+	else
+		do_pass "${message}";
+	fi
+}
+warn_not_ok() {
+	local ok message
+	ok=$1
+	message=$2
+	if [[ 0 == $ok ]]; then
+		do_warn "${message}";
+	else
+		do_pass "${message}"
+	fi
+}
 do_region() {
 	einfo "===[ $@ (${EBUILD_PHASE} @ ${EBUILD_PHASE_FUNC}) ]==="
 }
