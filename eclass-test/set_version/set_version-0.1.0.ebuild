@@ -4,7 +4,7 @@
 
 EAPI=6
 
-inherit perl-functions
+inherit perl-functions tester
 
 DESCRIPTION="Test for perl_set_version"
 HOMEPAGE="https://github.com/gentoo-perl/perl-eclass-testsuite"
@@ -17,53 +17,6 @@ IUSE=""
 
 DEPEND=""
 RDEPEND="${DEPEND}"
-
-global_state=pass
-
-do_pass() {
-	einfo "pass: $@"
-}
-do_warn() {
-	ewarn "weak fail: $@ ( in ${EBUILD_PHASE_FUNC} )"
-	[[ ${global_state} == 'pass' ]] && global_state="weak fail"
-}
-do_fail() {
-	eerror "fail: $@ ( in ${EBUILD_PHASE_FUNC} )"
-	global_state="fail"
-}
-do_final_status() {
-	if [[ "fail" == ${global_state} ]]; then
-		die "<<FAIL in ${EBUILD_PHASE_FUNC}>>"
-	fi
-	if [[ "weak fail" == ${global_state} ]]; then
-		ewarn "<<PASS: But possible issues in ${EBUILD_PHASE_FUNC}>>"
-	else
-		einfo "<<PASS>>"
-	fi
-}
-is_ok() {
-	local ok message
-	ok=$1
-	message=$2
-	if [[ 0 == ${ok} ]]; then
-		do_pass "${message}";
-	else
-		do_fail "${message}";
-	fi
-}
-warn_ok() {
-	local ok message
-	ok=$1
-	message=$2
-	if [[ 0 == $ok ]]; then
-		do_pass "${message}";
-	else
-		do_warn "${message}"
-	fi
-}
-do_region() {
-	einfo "===[ $@ (${EBUILD_PHASE} @ ${EBUILD_PHASE_FUNC}) ]==="
-}
 
 do_test() {
 	do_region "Variable Population Test"
