@@ -1,0 +1,3 @@
+[submodule "profiles/submodules/perl-eclasses"]
+	path = profiles/submodules/perl-eclasses
+	url = https://github.com/gentoo-perl/perl-eclasses.git

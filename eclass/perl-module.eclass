@@ -1,0 +1,1 @@
+../profiles/submodules/perl-eclasses/eclass/perl-module.eclass
