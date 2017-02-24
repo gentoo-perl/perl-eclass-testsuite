@@ -20,15 +20,35 @@ RDEPEND="${DEPEND}"
 
 global_state=pass
 
+do_pass() {
+	einfo "pass: $@"
+}
+do_warn() {
+	ewarn "weak fail: $@ ( in ${EBUILD_PHASE_FUNC} )"
+	[[ ${global_state} == 'pass' ]] && global_state="weak fail"
+}
+do_fail() {
+	eerror "fail: $@ ( in ${EBUILD_PHASE_FUNC} )"
+	global_state="fail"
+}
+do_final_status() {
+	if [[ "fail" == ${global_state} ]]; then
+		die "<<FAIL in ${EBUILD_PHASE_FUNC}>>"
+	fi
+	if [[ "weak fail" == ${global_state} ]]; then
+		ewarn "<<PASS: But possible issues in ${EBUILD_PHASE_FUNC}>>"
+	else
+		einfo "<<PASS>>"
+	fi
+}
 is_ok() {
 	local ok message
 	ok=$1
 	message=$2
 	if [[ 0 == ${ok} ]]; then
-		einfo "pass: ${message}";
+		do_pass "${message}";
 	else
-		global_state=fail
-		eerror "fail: ${message}";
+		do_fail "${message}";
 	fi
 }
 warn_ok() {
@@ -36,34 +56,34 @@ warn_ok() {
 	ok=$1
 	message=$2
 	if [[ 0 == $ok ]]; then
-		einfo "pass: ${message}";
+		do_pass "${message}";
 	else
-		[[ "fail" != ${global_state} ]] && global_state="weak fail"
-		ewarn "weak fail: ${message}";
+		do_warn "${message}"
 	fi
+}
+do_region() {
+	einfo "===[ $@ (${EBUILD_PHASE} @ ${EBUILD_PHASE_FUNC}) ]==="
 }
 
 do_test() {
-	for varname in PERL_VERSION; do
-		einfo "${varname} ${!varname}"
+	do_region "Variable Population Test"
+	for varname in PERL_VERSION SITE_ARCH SITE_LIB ARCH_LIB VENDOR_LIB VENDOR_ARCH; do
+		[[ -v ${varname} ]]
+		is_ok $? "-v \$${varname} (${!varname})"
+		[[ -n ${!varname} ]]
+		is_ok $? "-n \$${varname} (${!varname})"
 	done
+	do_region "User SITE targets"
 	for varname in SITE_ARCH SITE_LIB; do
 		[[ -e ${!varname} ]]
 		warn_ok $? "-e \$${varname} ( ${!varname} )"
 	done
+	do_region "Vendor Targets"
 	for varname in ARCH_LIB VENDOR_LIB VENDOR_ARCH; do
 		[[ -e ${!varname} ]]
 		is_ok $? "-e \$${varname} ( ${!varname} )"
 	done
-
-	if [[ "fail" == ${global_state} ]]; then 
-		die "<<FAIL>>"
-	fi
-	if [[ "weak fail" == ${global_state} ]]; then
-		ewarn "<<PASS: But possible issues>>"
-	else
-		einfo "<<PASS>>"
-	fi
+	do_final_status
 }
 
 pkg_pretend() {
