@@ -76,3 +76,30 @@ warn_not_ok() {
 do_region() {
 	einfo "===[ $@ (${EBUILD_PHASE} @ ${EBUILD_PHASE_FUNC}) ]==="
 }
+
+silent_deathless() {
+	if [[ $# -lt 1 ]]; then
+		die "$FUNCNAME(): Missing argument"
+	fi
+	# Subshell to catch "exit" calls
+	(
+		# isolated-functions.eclass calls "kill" to terminate
+		# the root bash PID instead of simply killing the subshell
+		# This is *not* what we want die() to mean, and we only
+		# want die() to kill the subshell, otherwise we _cant_ test it
+		#
+		# Hence, we add a hook to call exit() long before kill gets called
+		# by exploiting a die hook
+		export EBUILD_DEATH_HOOKS="$EBUILD_DEATH_HOOKS break_die_boomerang"
+
+		function break_die_boomerang() { exit 1; }
+
+		# This prevents all logging from working
+		function __elog_base() { return 0; }
+
+		# eerror calls echo directly instead of __vecho
+		function eerror() { return 0; }
+
+		PORTAGE_QUIET=1 "$@"
+	)
+}
