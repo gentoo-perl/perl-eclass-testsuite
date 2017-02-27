@@ -46,8 +46,8 @@ do_test() {
 	[[ -n "${vendorpath}" ]]
 	is_ok $? "vendorpath is non-zero length (${vendorpath})"
 
-	[[ -d "${vendorpath}" ]]
-	is_ok $? "vendorpath is a real directory";
+	[[ -d "${EPREFIX}${vendorpath}" ]]
+	is_ok $? "(eprefixed) vendorpath is a real directory";
 
 	if is_prefixed; then
 		# This is a hack because we can't afford for EPREFIX
